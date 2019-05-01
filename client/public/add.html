@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+
+    <title>Mzanzi Trivia</title>
+</head>
+
+<body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="add_root">
+        <div id="error"></div>
+        <form>
+            <label for="name">Name:</label>
+            <input id="name" name="name" />
+            </br>
+            <label for="quote">Quote:</label>
+            <input id="quote" name="quote" />
+            </br>
+            <button>Submit</button>
+        </form>
+        <div id="authors"></div>
+    </div>
+
+    <script>
+        const form = document.querySelector('form');
+        const error = document.querySelector('#error');
+        const authorsElement = document.querySelector("#authors");
+
+        const API_URL = "http://localhost:3003/authors";
+
+        form.addEventListener("submit", submit);
+
+        listAuthors();
+
+        function listAuthors() {
+            authorsElement.innerHTML = "";
+            fetch(API_URL)
+                .then(res => res.json())
+                .then(authors => {
+                    authors.forEach(author => {
+                        let authorElement = document.createElement('div');
+                        authorElement.className = 'author';
+                        authorElement.textContent = JSON.stringify(author);
+
+                        let deleteElement = document.createElement('button');
+                        deleteElement.className = 'delete';
+                        deleteElement.innerHTML = "&cross;";
+                        deleteElement.onclick = () => { deleteClicked(author) };
+
+                        authorElement.appendChild(deleteElement)
+                        authorsElement.appendChild(authorElement);
+                    })
+                })
+        }
+
+        function deleteClicked(author) {
+            fetch(`${API_URL}/delete`, {
+                method: 'POST',
+                body: JSON.stringify(author),
+                headers: {
+                    'content-type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        const contentType = response.headers.get('content-type');
+                        if (contentType.includes('json')) {
+                            return response.json().then(error => Promise.reject(error.message));
+                        } 
+                    } else {
+                        return response.json();
+                    }
+                })
+                .then(json => { listAuthors();})
+                .catch((error) => showError('errorzzz' + error))
+        }
+
+        function submit(e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const name = formData.get('name');
+            const quote = formData.get('quote');
+
+            if (name.trim() && quote.trim()) {
+                error.style.display = 'none';
+
+                const author = {
+                    name: name,
+                    quote: quote
+                };
+
+                fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(author),
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                }).then(response => {
+                    if (!response.ok) {
+                        const contentType = response.headers.get('content-type');
+                        if (contentType.includes('json')) {
+                            return response.json().then(error => Promise.reject(error.message));
+                        } else {
+                            return response.text().then(message => Promise.reject(message));
+                        }
+                    }
+                }).then(() => {
+                    listAuthors();
+                }).catch(errorMessage => {
+                    error.textContent = errorMessage;
+                    error.style.display = '';
+                });
+
+
+            } else {
+                error.textContent = "Name and quote are required";
+                error.style.display = ''
+            }
+        }
+
+        function showError(message){
+            error.style.display = ''
+            error.textContent = message
+        }
+    </script>
+</body>
+
+</html>

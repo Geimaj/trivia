@@ -1,0 +1,29 @@
+body {
+  background: #e3e3e3;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: black;
+  text-align: center;
+}
+
+.question .authors {
+  display: flex;
+  justify-content: space-between;
+  max-width: 80%;
+  margin: 40px auto;
+}
+
+.author {
+  background:rgb(238, 241, 242);
+  border-radius: 30px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  margin-left: 1rem;
+  /* box-shadow: 30px rgb(120, 144, 256); */
+}
+
+.author:hover {
+  background:rgb(179, 180, 180);
+  border-radius: 30px;
+  overflow: hidden;
+  /* box-shadow: 30px rgb(120, 144, 256); */
+}
