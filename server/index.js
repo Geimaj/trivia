@@ -3,10 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const monk = require('monk');
 
-
 const port = 3003;
-
-let query = 'steve%20jobs'
 
 const app = express();
 
@@ -17,20 +14,37 @@ app.use(cors())
 app.use(express.json())
 
 app.get('/', async function (req, res) {
-  res.send(query)
+  res.send("Hello, Mzanzi!")
 });
-
 
 app.post('/authors', (req, res) => {
   if (isValidAuthor(req.body)) {
     const author = {
       name: req.body.name,
-      quote: req.body.quote
+      quotes: [req.body.quote]
     }
 
-    authors
-      .insert(author)
-      .then(auth => res.json(auth))
+    console.log(author)
+
+    authors.find({name: author.name})
+      .then(a => {
+          if(a.length > 0){
+            let quotes = getQuotes(a[0]);
+            quotes.push(req.body.quote);
+
+            authors
+              .update({name: author.name}, {
+                $set: {quotes: quotes}
+              })
+              .then(docs => res.json(author))
+
+          } else {
+            authors
+              .insert(author)
+              .then(docs => res.json(author))
+          }
+      })
+
   } else {
     res.status(422);
     res.json({
@@ -38,6 +52,10 @@ app.post('/authors', (req, res) => {
     })
   }
 })
+
+function getQuotes(author){
+  return author.quotes || [];
+}
 
 app.get('/authors', (req, res) => {
   authors
@@ -57,7 +75,6 @@ app.post('/authors/delete', (req, res) => {
           message: `unable to delete author ${req.body._id}`
         })
       } else {
-
         authors
           .remove(req.body)
           .then((result) => {
