@@ -1,7 +1,7 @@
 import React from 'react';
 import Question from './Question';
 
-const API_URL = window.location.hostname === "localhost" ? "http://localhost:3003" : "now.sh";
+const API_URL = window.location.hostname === "localhost" ? "http://localhost:3003" : "https://mzanzi-trivia-api.now.sh";
 console.log(API_URL)
 
 export default class Game extends React.Component{

@@ -3,7 +3,9 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: black;
   text-align: center;
+  height: 100%;
 }
+
 
 .question .authors {
   display: flex;
@@ -19,14 +21,13 @@ body {
   margin-bottom: 2rem;
   margin-left: 1rem;
   width: 30%;
-  /* box-shadow: 30px rgb(120, 144, 256); */
+  max-height: 70%;
 }
 
 .author:hover {
   background:rgb(179, 180, 180);
   border-radius: 30px;
   overflow: hidden;
-  /* box-shadow: 30px rgb(120, 144, 256); */
 }
 
 img {
