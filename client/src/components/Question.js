@@ -15,7 +15,7 @@ export default class Question extends React.Component{
         let authors = this.props.question.authors.map((author, i) => {
             return (<Author key={author.name} 
                     name={author.name} 
-                    src={author.src}
+                    src={author.image}
                     onClick={() => this.authorClicked(i)}/>)
         })
         return (

@@ -18,6 +18,7 @@ body {
   overflow: hidden;
   margin-bottom: 2rem;
   margin-left: 1rem;
+  width: 30%;
   /* box-shadow: 30px rgb(120, 144, 256); */
 }
 
@@ -26,4 +27,8 @@ body {
   border-radius: 30px;
   overflow: hidden;
   /* box-shadow: 30px rgb(120, 144, 256); */
+}
+
+img {
+  width: 100%;
 }

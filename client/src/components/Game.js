@@ -1,8 +1,8 @@
 import React from 'react';
 import Question from './Question';
 
-const API_URL = "http://localhost:3003";
-
+const API_URL = window.location.hostname === "localhost" ? "http://localhost:3003" : "now.sh";
+console.log(API_URL)
 
 export default class Game extends React.Component{
 
@@ -13,7 +13,11 @@ export default class Game extends React.Component{
         this.state = {
             playing: false,
             score: 0,
-            question: null
+            question: {
+                authors: [],
+                answer: 0,
+                quote: ""
+            }
         }
 
         this.playButtonClicked = this.playButtonClicked.bind(this)
@@ -21,6 +25,10 @@ export default class Game extends React.Component{
         this.pass = this.pass.bind(this)
         this.fail = this.fail.bind(this)
 
+    }
+    
+    componentWillMount(){
+        this.getNextQuestion()
     }
 
     playButtonClicked(){
@@ -33,26 +41,11 @@ export default class Game extends React.Component{
     }
 
     getNextQuestion(){
-        this.setState({
-            question: {
-                authors: [
-                    {
-                        name: "Mandela",
-                        src: require("../assets/mandela.jpg")
-                    },
-                    {
-                        name: "Thabo",
-                        src: require("../assets/mandela.jpg")
-                    },
-                    {
-                        name: "Zuma",
-                        src: require("../assets/mandela.jpg")
-                    },
-                ],
-                answer: 1,
-                quote: "Who said this"
-            }
-        })
+        const question =
+            fetch(`${API_URL}/question`)
+            .then(res => res.json())
+            .then(q => this.setState({question: q}))
+            .catch(err => console.log('error ' + err))
     }
     
     pass(){
@@ -60,35 +53,18 @@ export default class Game extends React.Component{
             score: this.state.score +1
         })
 
-        // this.confetti();
+        this.getNextQuestion();
     }
-
-    // confetti(){
-    //     let confetti = []
-    //     let x = Math.random() * 1000
-    //     // for(let i = 0; i < x; i++){
-    //     //     let c = document.createElement('div')
-    //     //     c.className = 'confetti'
-
-            
-    //     // }
-    // }
     
     fail(){
         this.setState({
             score: this.state.score -1
         })
 
-        console.log('ney')
+        this.getNextQuestion();
     }
 
     render(){
-
-        // let quote = fetch(API_URL)
-        //     .then((res) => res.text())
-        //     .then((text)=> console.log(text))
-        // console.log(quote)
-        
         let game = <div className='start'>
             <h1>Mzanzi Trivia</h1>
             <h3>Match the author to the quote</h3>

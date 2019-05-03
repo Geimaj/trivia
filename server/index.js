@@ -9,7 +9,7 @@ console.log(connectionString)
 
 let authors;
 
-MongoClient.connect(connectionString, (error,client) => {
+MongoClient.connect(connectionString, {useNewUrlParser: true}, (error,client) => {
     if (error) throw error;
 
     const mongo = client.db('mzanzi-trivia');
@@ -28,10 +28,39 @@ MongoClient.connect(connectionString, (error,client) => {
     res.send("Hello, Mzanzi!")
   });
 
-  app.get('/question', (req, res) => {
-    
-  })
+  app.get('/question', async (req, res) => {
+    console.log('getting question...')
+      let data = await getAuthors()
 
+      //get 3 authors
+      let writers = []
+      while(writers.length < 3){
+        let index = Math.floor(Math.random() * data.length)
+        let author = data[index]
+        if(!writers.includes(author)){
+          writers.push(author)
+        }
+      }
+
+      //chooose random author from our 3
+      let answer = Math.floor(Math.random() * writers.length)
+      //choose random quote from that author
+      let quoteIndex = Math.floor(Math.random() * writers[answer].quotes.length)
+      let quote = writers[answer].quotes[quoteIndex]
+
+      let q = {
+        authors: writers.map(author => {
+          return {
+            name: author.name,
+            image: author.image
+          }
+        }),
+        answer: answer,
+        quote: quote
+      }
+
+      res.json(q)
+  })
 
   function getAuthors(option){
     return new Promise((resolve, reject) => {
@@ -81,7 +110,6 @@ app.post('/authors', (req, res) => {
               .then(docs => res.json(author))
 
           } else {
-            console.log('insert')
             authors
               .insertOne(author)
               .then(docs => res.json(author))
@@ -102,24 +130,22 @@ app.post('/authors/delete', (req, res) => {
 
   let target = {name: req.body.name}
 
-  getAuthors(target)
-    .then(result => console.log(result))
-    .catch((error) => {
-      console.log('error finding ' + target._id)
-      console.log(error)
-    })
+  // getAuthors(target)
+  //   .then(result => console.log(result))
+  //   .catch((error) => {
+  //     console.log('error finding ' + target._id)
+  //     console.log(error)
+  //   })
 
   authors
     .deleteOne(target)
     .then((result) => {
-      console.log(result.deletedCount)
       res.json({
         message: `deleted ${req.body._id}`
       })
     })
     .catch((error) =>{
       res.status(422)
-      console.log('error')
       res.json({
         message: `unable to delete author ${req.body._id}`
       })
