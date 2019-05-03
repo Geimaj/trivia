@@ -1,10 +1,6 @@
-// const fetch = require('node-fetch')
 const express = require('express');
 const cors = require('cors');
-// const monk = require('monk');
-// const monkDebug = require("monk-middleware-debug");
 const MongoClient = require('mongodb').MongoClient;
-
 
 const app = express();
 const port = 3003;
@@ -31,6 +27,10 @@ MongoClient.connect(connectionString, (error,client) => {
   app.get('/', async function (req, res) {
     res.send("Hello, Mzanzi!")
   });
+
+  app.get('/question', (req, res) => {
+    
+  })
 
 
   function getAuthors(option){
