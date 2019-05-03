@@ -1,5 +1,4 @@
 import React from 'react';
-import Author from './components/Author';
 import Game from './components/Game';
 
 import './App.css';

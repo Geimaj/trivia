@@ -60,19 +60,19 @@ export default class Game extends React.Component{
             score: this.state.score +1
         })
 
-        this.confetti();
+        // this.confetti();
     }
 
-    confetti(){
-        let confetti = []
-        let x = Math.random() * 1000
-        // for(let i = 0; i < x; i++){
-        //     let c = document.createElement('div')
-        //     c.className = 'confetti'
+    // confetti(){
+    //     let confetti = []
+    //     let x = Math.random() * 1000
+    //     // for(let i = 0; i < x; i++){
+    //     //     let c = document.createElement('div')
+    //     //     c.className = 'confetti'
 
             
-        // }
-    }
+    //     // }
+    // }
     
     fail(){
         this.setState({
@@ -84,9 +84,9 @@ export default class Game extends React.Component{
 
     render(){
 
-        let quote = fetch(API_URL)
-            .then((res) => res.text())
-            .then((text)=> console.log(text))
+        // let quote = fetch(API_URL)
+        //     .then((res) => res.text())
+        //     .then((text)=> console.log(text))
         // console.log(quote)
         
         let game = <div className='start'>

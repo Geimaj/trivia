@@ -3,10 +3,6 @@ import Author from './Author';
 
 export default class Question extends React.Component{
 
-    constructor(props){
-        super(props)
-    }
-
     authorClicked(i){
         if(i === this.props.question.answer){
             this.props.pass();

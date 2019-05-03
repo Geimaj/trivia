@@ -1,46 +1,89 @@
-const fetch = require('node-fetch')
+// const fetch = require('node-fetch')
 const express = require('express');
 const cors = require('cors');
-const monk = require('monk');
+// const monk = require('monk');
+// const monkDebug = require("monk-middleware-debug");
+const MongoClient = require('mongodb').MongoClient;
 
-const port = 3003;
 
 const app = express();
+const port = 3003;
+const connectionString = process.env.MONGO_URI || 'mongodb://localhost/mzanzi-trivia';
+console.log(connectionString)
 
-const db = monk('localhost/mzanzi-trivia');
-const authors = db.get('authors');
+let authors;
 
-app.use(cors())
-app.use(express.json())
+MongoClient.connect(connectionString, (error,client) => {
+    if (error) throw error;
 
-app.get('/', async function (req, res) {
-  res.send("Hello, Mzanzi!")
-});
+    const mongo = client.db('mzanzi-trivia');
+    authors = mongo.collection("authors");
+
+    app.listen(port);
+    console.log(`listening on ${port}...`);
+    
+  })
+  
+  app.enable('trust proxy')
+  app.use(cors())
+  app.use(express.json())
+  
+  app.get('/', async function (req, res) {
+    res.send("Hello, Mzanzi!")
+  });
+
+
+  function getAuthors(option){
+    return new Promise((resolve, reject) => {
+      authors.find(option).toArray((error, data) => {
+        if(error){
+          reject(error);
+        } else {
+          resolve(data)
+        }
+      })
+    })
+  }
+
+  app.get('/authors', (req, res) => {
+    console.log('GET authors')
+    getAuthors()
+      .then(result => res.json(result))
+      .catch(error => {
+        res.status(500)
+        res.json({message: error})
+        console.log(error)
+      })
+  })
 
 app.post('/authors', (req, res) => {
+  console.log(req.body)
   if (isValidAuthor(req.body)) {
     const author = {
       name: req.body.name,
-      quotes: [req.body.quote]
+      quotes: [req.body.quote],
+      image: req.body.image
     }
 
-    console.log(author)
-
-    authors.find({name: author.name})
+    getAuthors({name: author.name})
       .then(a => {
           if(a.length > 0){
-            let quotes = getQuotes(a[0]);
+            let quotes = a[0].quotes || [];
             quotes.push(req.body.quote);
 
             authors
-              .update({name: author.name}, {
-                $set: {quotes: quotes}
+              .updateOne({name: author.name}, {
+                $set: {
+                    quotes: quotes,
+                    image: author.image
+                  }
               })
               .then(docs => res.json(author))
 
           } else {
+            console.log('insert')
             authors
-              .insert(author)
+              .insertOne(author)
               .then(docs => res.json(author))
           }
       })
@@ -52,48 +95,42 @@ app.post('/authors', (req, res) => {
     })
   }
 })
-
-function getQuotes(author){
-  return author.quotes || [];
-}
-
-app.get('/authors', (req, res) => {
-  authors
-    .find()
-    .then(authors => res.json(authors))
-})
+  
 
 app.post('/authors/delete', (req, res) => {
   console.log(`deleting ${req.body._id}`)
 
-  authors
-    .find(req.body._id)
-    .then(author => {
-      if (author.length <= 0) {
-        res.status(422)
-        res.json({
-          message: `unable to delete author ${req.body._id}`
-        })
-      } else {
-        authors
-          .remove(req.body)
-          .then((result) => {
-            res.status(200)
-            res.json({
-              message: `deleted ${req.body._id}`
-            })
-          })
-      }
+  let target = {name: req.body.name}
+
+  getAuthors(target)
+    .then(result => console.log(result))
+    .catch((error) => {
+      console.log('error finding ' + target._id)
+      console.log(error)
     })
+
+  authors
+    .deleteOne(target)
+    .then((result) => {
+      console.log(result.deletedCount)
+      res.json({
+        message: `deleted ${req.body._id}`
+      })
+    })
+    .catch((error) =>{
+      res.status(422)
+      console.log('error')
+      res.json({
+        message: `unable to delete author ${req.body._id}`
+      })
+    })
+
 })
 
 function isValidAuthor(author) {
   return author.name && author.name.toString().trim() != "" &&
-    author.quote && author.quote.toString().trim() != "";
+    (author.quote && author.quote.toString().trim() != "" || author.image && author.image.toString().trim() != "");
 }
-
-app.listen(port);
-console.log(`listening on ${port}...`)
 
 
 

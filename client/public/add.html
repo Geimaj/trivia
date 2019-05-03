@@ -3,11 +3,15 @@
 
 <head>
     <meta charset="utf-8" />
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
 
     <title>Mzanzi Trivia</title>
+    <style>
+        img {
+            width: 200px;
+        }
+    </style>
 </head>
 
 <body>
@@ -21,6 +25,8 @@
             <label for="quote">Quote:</label>
             <input id="quote" name="quote" />
             </br>
+            <label for="image">Image</label>
+            <input id="image" name="image" />
             <button>Submit</button>
         </form>
         <div id="authors"></div>
@@ -31,7 +37,8 @@
         const error = document.querySelector('#error');
         const authorsElement = document.querySelector("#authors");
 
-        const API_URL = "http://localhost:3003/authors";
+        const API_URL = document.location.hostname === "localhost" ? "http://localhost:3003/authors" : "now.sh"
+        console.log(API_URL)
 
         form.addEventListener("submit", submit);
 
@@ -52,10 +59,14 @@
                         deleteElement.innerHTML = "&cross;";
                         deleteElement.onclick = () => { deleteClicked(author) };
 
+                        let img = document.createElement('img');
+                        img.src = author.image
+                        
+                        authorElement.appendChild(img)
                         authorElement.appendChild(deleteElement)
                         authorsElement.appendChild(authorElement);
                     })
-                })
+                }).catch((error) => console.log(error))
         }
 
         function deleteClicked(author) {
@@ -71,12 +82,12 @@
                         const contentType = response.headers.get('content-type');
                         if (contentType.includes('json')) {
                             return response.json().then(error => Promise.reject(error.message));
-                        } 
+                        }
                     } else {
                         return response.json();
                     }
                 })
-                .then(json => { listAuthors();})
+                .then(json => { listAuthors(); })
                 .catch((error) => showError('errorzzz' + error))
         }
 
@@ -86,13 +97,15 @@
             const formData = new FormData(form);
             const name = formData.get('name');
             const quote = formData.get('quote');
+            const image = formData.get('image');
 
-            if (name.trim() && quote.trim()) {
+            if (name.trim() && (quote.trim() || image.trim()) ) {
                 error.style.display = 'none';
 
                 const author = {
                     name: name,
-                    quote: quote
+                    quote: quote,
+                    image: image
                 };
 
                 fetch(API_URL, {
@@ -118,13 +131,14 @@
                 });
 
 
+                listAuthors();
             } else {
                 error.textContent = "Name and quote are required";
                 error.style.display = ''
             }
         }
 
-        function showError(message){
+        function showError(message) {
             error.style.display = ''
             error.textContent = message
         }
