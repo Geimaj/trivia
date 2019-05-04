@@ -6,5 +6,5 @@
             "config": { "distDir": "build"}
         }
     ],
-    "alias": ["mzanzi-trivia-test.com"]
+    "alias": ["mzanzi-trivia-test.com", "mzanzi-trivia-test.now.sh"]
 }
