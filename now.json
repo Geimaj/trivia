@@ -1,0 +1,10 @@
+{
+    "builds": [
+        {
+            "src": "server/package.json",
+            "use": "@now/static-build",
+            "config": { "distDir": "build"}
+        }
+    ],
+    "alias": ["mzanzi-trivia-test.com"]
+}
