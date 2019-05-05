@@ -77,11 +77,21 @@ class Game extends React.Component {
 
   async authorClicked(correct) {
     let points = 0;
+    let color = "";
     if (correct) {
       points = 1;
+      color = "#296840";
     } else {
       points = -1;
+      color = "#bf0b3e";
     }
+
+    let body = document.querySelector("body");
+    body.style.backgroundColor = color;
+
+    setTimeout(() => {
+      body.style.backgroundColor = "#e3e3e3";
+    }, 400);
 
     let round = this.state.round + 1;
 
