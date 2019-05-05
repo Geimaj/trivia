@@ -12,11 +12,7 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
 
-    this.emptyQuestion = {
-      authors: [],
-      answer: 0,
-      quote: ""
-    };
+    this.emptyQuestion = null;
 
     this.state = {
       playing: false,
@@ -37,17 +33,38 @@ class Game extends React.Component {
     this.maxRounds = this.props.rounds || 3;
   }
 
+  componentWillMount() {
+    this.getNextQuestion().then(q => {
+      q.authors.forEach(author => {
+        let img = new Image();
+        img.src = author.image;
+      });
+      this.setState({ question: q });
+    });
+  }
+
+  componentDidMount() {
+    this.loader = document.querySelector(".loader");
+  }
+
   async playButtonClicked() {
-    let q = await this.getNextQuestion();
-    let highscore = await fetch(API_URL + "/highscore").then(res => res.json());
+    this.loader.style.display = "";
+
+    if (!this.state.question) {
+      this.getNextQuestion().then(question =>
+        this.setState({ question: question })
+      );
+    }
+
+    fetch(API_URL + "/highscore")
+      .then(res => res.json())
+      .then(json => this.setState({ highscore: json }));
 
     this.setState({
       playing: true,
       gameOver: false,
       round: 0,
-      score: 0,
-      question: q,
-      highscore: highscore
+      score: 0
     });
   }
 
@@ -94,6 +111,7 @@ class Game extends React.Component {
           <HighScore
             playButtonClicked={this.playButtonClicked}
             score={this.state.score}
+            highscore={this.state.highscore}
           />
         );
       } else {
@@ -101,8 +119,9 @@ class Game extends React.Component {
           <div>
             <h2>Score: {this.state.score}</h2>
             <span>
-              Highsore: {this.state.highscore.score} by &nbsp;
-              <b>{this.state.highscore.name}</b>
+              High score: {this.state.highscore && this.state.highscore.score}{" "}
+              by &nbsp;
+              <b>{this.state.highscore && this.state.highscore.name}</b>
             </span>
             <h3>Round {this.state.round}</h3>
 
@@ -115,7 +134,16 @@ class Game extends React.Component {
       }
     }
 
-    return <div className="game">{game}</div>;
+    return (
+      <div className="game">
+        {game}
+        <img
+          className="loader"
+          src={require("../assets/loader.gif")}
+          alt="spinner"
+        />
+      </div>
+    );
   }
 }
 

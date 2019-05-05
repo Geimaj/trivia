@@ -6,26 +6,7 @@ export default class highscore extends React.Component {
     super();
     this.HIGHSCORE_URL = API_URL + "/highscore";
 
-    this.state = {
-      highscore: -80,
-      name: ""
-    };
-
     this.saveScoreClicked = this.saveScoreClicked.bind(this);
-  }
-
-  async componentWillMount() {
-    console.log(this.HIGHSCORE_URL);
-    let json = await fetch(this.HIGHSCORE_URL)
-      .then(res => res.json())
-      .then(json => {
-        return json;
-      });
-
-    this.setState({
-      highscore: json.score,
-      name: json.name
-    });
   }
 
   saveScoreClicked(e) {
@@ -54,7 +35,7 @@ export default class highscore extends React.Component {
 
   render() {
     let form;
-    if (this.props.score > this.state.highscore) {
+    if (this.props.score > this.props.highscore.score) {
       form = (
         <form>
           <h1>Well Done!</h1>
@@ -71,7 +52,7 @@ export default class highscore extends React.Component {
         <h1>Game Over</h1>
         <h2>You scored {this.props.score}</h2>
         <h3>
-          {this.state.name}'s score: {this.state.highscore}
+          {this.props.highscore.name}'s score: {this.props.highscore.score}
         </h3>
         {form}
         <button onClick={this.props.playButtonClicked}>Play Again</button>
