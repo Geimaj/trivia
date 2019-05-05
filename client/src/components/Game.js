@@ -37,23 +37,17 @@ class Game extends React.Component {
     this.maxRounds = this.props.rounds || 3;
   }
 
-  async componentWillMount() {
-    let highscore = await fetch(API_URL + "/highscore").then(res => res.json());
-    this.setState({
-      highscore: highscore
-    });
-    console.log(highscore);
-  }
-
   async playButtonClicked() {
     let q = await this.getNextQuestion();
+    let highscore = await fetch(API_URL + "/highscore").then(res => res.json());
 
     this.setState({
       playing: true,
       gameOver: false,
       round: 0,
       score: 0,
-      question: q
+      question: q,
+      highscore: highscore
     });
   }
 
