@@ -9,6 +9,7 @@ const connectionString =
 console.log(connectionString);
 
 let authors;
+let db;
 
 MongoClient.connect(
   connectionString,
@@ -17,10 +18,11 @@ MongoClient.connect(
     if (error) throw error;
 
     const mongo = client.db("mzanzi-trivia");
-    authors = mongo.collection("authors");
+    db = mongo;
 
     app.listen(port);
     console.log(`listening on ${port}...`);
+    authors = mongo.collection("authors");
   }
 );
 
@@ -65,18 +67,6 @@ app.get("/question", async (req, res) => {
 
   res.json(q);
 });
-
-function getAuthors(option) {
-  return new Promise((resolve, reject) => {
-    authors.find(option).toArray((error, data) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(data);
-      }
-    });
-  });
-}
 
 app.get("/authors", (req, res) => {
   console.log("GET authors");
@@ -152,6 +142,65 @@ app.post("/authors/delete", (req, res) => {
       });
     });
 });
+
+app.get("/highscore", async (req, res) => {
+  res.json(await getHighscore());
+});
+
+app.post("/highscore", async (req, res) => {
+  console.log("POST /highscore");
+  console.log(req.body);
+  let highscore = await getHighscore();
+
+  if (req.body.score > highscore.score) {
+    if (
+      highscore.name === "noone" &&
+      highscore.score === -99 &&
+      highscore._id === 0
+    ) {
+      db.collection("highscore")
+        .insertOne(req.body)
+        .then(docs => res.json(docs));
+    } else {
+      db.collection("highscore")
+        .updateOne(
+          { _id: highscore._id },
+          {
+            $set: {
+              name: req.body.name,
+              score: req.body.score
+            }
+          }
+        )
+        .then(docs => res.json(docs));
+    }
+  } else {
+    res.json(highscore);
+  }
+});
+
+async function getHighscore() {
+  let data = await db
+    .collection("highscore")
+    .find({})
+    .toArray();
+
+  let highscore =
+    data.length > 0 ? data[0] : { name: "noone", score: -99, _id: 0 };
+  return highscore;
+}
+
+function getAuthors(option) {
+  return new Promise((resolve, reject) => {
+    authors.find(option).toArray((error, data) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(data);
+      }
+    });
+  });
+}
 
 function isValidAuthor(author) {
   return (

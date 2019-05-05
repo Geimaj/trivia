@@ -1,87 +1,128 @@
-import React from 'react';
-import Question from './Question';
+import React from "react";
+import Question from "./Question";
+import HighScore from "./Highscore";
 
-const API_URL = window.location.hostname === "localhost" ? "http://localhost:3003" : "https://mzanzi-trivia-api.now.sh";
-console.log(API_URL)
+const API_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:3003"
+    : "https://mzanzi-trivia-api.now.sh";
+console.log(API_URL);
 
-export default class Game extends React.Component{
+class Game extends React.Component {
+  constructor(props) {
+    super(props);
 
+    this.emptyQuestion = {
+      authors: [],
+      answer: 0,
+      quote: ""
+    };
 
-    constructor(props){
-        super(props)
+    this.state = {
+      playing: false,
+      gameOver: false,
+      score: 0,
+      question: this.emptyQuestion,
+      round: 0,
+      highScore: {
+        score: 0,
+        name: "noone"
+      }
+    };
 
-        this.state = {
-            playing: false,
-            score: 0,
-            question: {
-                authors: [],
-                answer: 0,
-                quote: ""
-            }
-        }
+    this.playButtonClicked = this.playButtonClicked.bind(this);
+    this.getNextQuestion = this.getNextQuestion.bind(this);
+    this.authorClicked = this.authorClicked.bind(this);
 
-        this.playButtonClicked = this.playButtonClicked.bind(this)
-        this.getNextQuestion = this.getNextQuestion.bind(this)
-        this.pass = this.pass.bind(this)
-        this.fail = this.fail.bind(this)
+    this.maxRounds = this.props.rounds || 3;
+  }
 
+  async componentWillMount() {
+    let highscore = await fetch(API_URL + "/highscore").then(res => res.json());
+    this.setState({
+      highscore: highscore
+    });
+    console.log(highscore);
+  }
+
+  async playButtonClicked() {
+    let q = await this.getNextQuestion();
+
+    this.setState({
+      playing: true,
+      gameOver: false,
+      round: 0,
+      score: 0,
+      question: q
+    });
+  }
+
+  async getNextQuestion() {
+    let json = await fetch(`${API_URL}/question`);
+    let question = await json.json();
+
+    return question;
+  }
+
+  async authorClicked(correct) {
+    let points = 0;
+    if (correct) {
+      points = 1;
+    } else {
+      points = -1;
     }
-    
-    componentWillMount(){
-        this.getNextQuestion()
-    }
 
-    playButtonClicked(){
-        this.getNextQuestion();
+    let round = this.state.round + 1;
 
-        this.setState({
-            playing: true,
-            score: 0,
-        })
-    }
+    this.setState({
+      score: this.state.score + points,
+      round: round,
+      question:
+        round >= this.maxRounds
+          ? this.emptyQuestion
+          : await this.getNextQuestion(),
+      gameOver: round >= this.maxRounds
+    });
+  }
 
-    getNextQuestion(){
-        const question =
-            fetch(`${API_URL}/question`)
-            .then(res => res.json())
-            .then(q => this.setState({question: q}))
-            .catch(err => console.log('error ' + err))
-    }
-    
-    pass(){
-        this.setState({
-            score: this.state.score +1
-        })
+  render() {
+    let game = (
+      <div className="start">
+        <h1>Mzanzi Trivia</h1>
+        <h3>Match the author to the quote</h3>
+        <button onClick={this.playButtonClicked}>Play</button>
+      </div>
+    );
 
-        this.getNextQuestion();
-    }
-    
-    fail(){
-        this.setState({
-            score: this.state.score -1
-        })
-
-        this.getNextQuestion();
-    }
-
-    render(){
-        let game = <div className='start'>
-            <h1>Mzanzi Trivia</h1>
-            <h3>Match the author to the quote</h3>
-            <button onClick={this.playButtonClicked}>Play</button>
-        </div>
-
-        if(this.state.playing){
-            game = <div>
-                <h2>Score: {this.state.score}</h2>
-                <Question question={this.state.question} pass={this.pass} fail={this.fail} />
-            </div>
-        }
-
-        return (
-            <div className="game">
-                {game}
-            </div>
+    if (this.state.playing) {
+      if (this.state.gameOver) {
+        game = (
+          <HighScore
+            playButtonClicked={this.playButtonClicked}
+            score={this.state.score}
+          />
         );
+      } else {
+        game = (
+          <div>
+            <h2>Score: {this.state.score}</h2>
+            <span>
+              Highsore: {this.state.highscore.score} by &nbsp;
+              <b>{this.state.highscore.name}</b>
+            </span>
+            <h3>Round {this.state.round}</h3>
+
+            <Question
+              question={this.state.question}
+              authorClicked={this.authorClicked}
+            />
+          </div>
+        );
+      }
     }
+
+    return <div className="game">{game}</div>;
+  }
 }
+
+export { Game, API_URL };

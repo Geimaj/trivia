@@ -1,11 +1,10 @@
 body {
   background: #e3e3e3;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   color: black;
   text-align: center;
   height: 100%;
 }
-
 
 .question .authors {
   display: flex;
@@ -15,17 +14,18 @@ body {
 }
 
 .author {
-  background:rgb(238, 241, 242);
+  background: rgb(238, 241, 242);
   border-radius: 30px;
   overflow: hidden;
   margin-bottom: 2rem;
   margin-left: 1rem;
   width: 30%;
   max-height: 70%;
+  cursor: pointer;
 }
 
 .author:hover {
-  background:rgb(179, 180, 180);
+  background: rgb(179, 180, 180);
   border-radius: 30px;
   overflow: hidden;
 }
