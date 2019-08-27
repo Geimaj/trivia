@@ -2,8 +2,6 @@
 
 (Excuse to play with React, MongoDB and Express)
 
-Live at: https://mzanzi-trivia.geimaj.now.sh/
-
 In the project directory, you can run:
 
 ### `./start.sh`
